@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+
+{% block body %}
+    <form action="/next" method="GET">
+        <input name="address" placeholder="put in you address" type="text" required>
+        <input name="city" placeholder="put in your city" type="text" required>
+        <input name="st" placeholder="st" type="text" required>
+        <input name="zip" placeholder="zip" type="text" required>
+        <button type="submit">next</button>
+    </form>
+{% endblock %}

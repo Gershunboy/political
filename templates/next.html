@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+
+{% block body %}
+<table border="0">
+{% for (key, value) in address.items() %}
+    <tr>
+        <td>{{ key }}</td>
+        <td>{{ value }}</td>
+    </tr>
+{% endfor %}
+</table>
+{% endblock %}
