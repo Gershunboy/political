@@ -1,72 +1,57 @@
-import requests
-import json
-import sqlite3
+import os
+from sqlalchemy import create_engine, MetaData, Table, select
+from sqlalchemy.orm import Session
+from db_stuff.geocod import lookup_address
 
-conn = sqlite3.connect("db.db")
-cur = conn.cursor()
-GEOCODIO_API_KEY = "2603aa336723a23240635622634ff823f204623"
+basedir = os.path.abspath(os.path.dirname(__file__))
+engine = create_engine("sqlite:///" + os.path.join(basedir, "politicians.db"))
 
-def main():
-    address = """input("Enter an address: ")"""'48 thames blvd, 07621'
-    result = lookup_address(address)
-    print(result)
-    # if result:
-    #     for i in result:
-    #         print (result[i])
-    cur.execute(f"SELECT * FROM politician WHERE position_id IN (SELECT id FROM position WHERE district_id = (SELECT id FROM legislative_district WHERE name = '{result["congressional_district"]}' AND type = 'congressional'));")
-    for row in cur.fetchall():
-        print(f"{row[1]}, {row[3]}")
-        cur.execute(f"SELECT * FROM FACTS WHERE politician_id = {row[0]}")
-        for i in cur.fetchall():
-            print (i[1])
-        print("m"*60)
+metadata = MetaData()
+metadata.reflect(bind=engine)  # reads existing table structure from the db file
 
-def lookup_address(address):
-    url = "https://api.geocod.io/v1.7/geocode"
-    params = {
-        "q": address,
-        "fields": "cd,stateleg,county",
-        "api_key": GEOCODIO_API_KEY
-    }
+state_table = metadata.tables["state"]
+county_table = metadata.tables["county"]
+municipality_table = metadata.tables["municipality"]
+congressional_district_table = metadata.tables["congressional_district"]
+state_senate_district_table = metadata.tables["state_senate_district"]
+state_house_district_table = metadata.tables["state_house_district"]
 
-    response = requests.get(url, params=params)
-    data = response.json()
+address = input()
+address = lookup_address(address)
+print (address)
 
-    if not data.get("results"):
-        print("No results found for that address.")
-        return None
+with Session(engine) as session:
+    state = session.execute(
+        select(state_table.c.id).where(state_table.c.abbreviation == address["state"])
+    ).scalar_one_or_none()
+    print(state)
 
-    result = data["results"][0]
-    fields = result.get("fields", {})
+    county = address['county']
+    cny = session.execute(
+        select(county_table.c.id).where(county_table.c.name == county)
+    ).scalar_one_or_none()
+    print(cny)
 
-    output = {
-        "formatted_address": result.get("formatted_address"),
-        "state": result["address_components"].get("state"),
-        "county": result["address_components"].get("county"),
-        "city": result["address_components"].get("city"),
-        "congressional_district": None,
-        "state_senate_district": None,
-        "state_house_district": None,
-    }
+    city = address['city']
+    muni = session.execute(
+        select(municipality_table.c.id).where(municipality_table.c.name == city)
+    ).scalar_one_or_none()
+    print(muni)
 
-    # Congressional district
-    cd = fields.get("congressional_districts", [])
-    if cd:
-        output["congressional_district"] =  cd[0].get("district_number")
+    cong = address['congressional_district']
+    cg = session.execute(
+        select(congressional_district_table.c.id).where(congressional_district_table.c.number == cong)
+    ).scalar_one_or_none()
+    print(cg)
 
-    # State legislative districts
-    stateleg = fields.get("state_legislative_districts", {})
+    stSen = address['state_senate_district']
+    st_sen = session.execute(
+        select(state_senate_district_table.c.id).where(state_senate_district_table.c.number == stSen)
+    ).scalar_one_or_none()
+    print(st_sen)
 
-    senate = stateleg.get("senate", [])
-    if senate:
-        output["state_senate_district"] = senate[0].get("district_number"),
-
-    house = stateleg.get("house", [])
-    if house:
-        output["state_house_district"] = house[0].get("district_number")
-
-    return output
-
-
-if __name__ == "__main__":
-    main()
+    StHDt = address['state_house_district']
+    st_hor = session.execute(
+        select(state_house_district_table.c.id).where(state_house_district_table.c.number == StHDt)
+    ).scalar_one_or_none()
+    print(st_hor)
