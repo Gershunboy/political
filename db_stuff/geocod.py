@@ -24,7 +24,7 @@ def lookup_address(address):
     output = {
         "formatted_address": result.get("formatted_address"),
         "state": result["address_components"].get("state"),
-        "county": result["address_components"].get("county"),
+        "county": result["address_components"].get("county").removesuffix(' County'),
         "city": result["address_components"].get("city"),
         "congressional_district": None,
         "state_senate_district": None,
@@ -53,7 +53,7 @@ def lookup_address(address):
     # School districts
     return output
 if __name__ == "__main__":
-    address = '48 thames blvd, bergenfield, nj 07621'
+    address = '48 thames bllvd, bergenfield, nj 07621'
     result = lookup_address(address)
     if result:
         for key, value in result.items():

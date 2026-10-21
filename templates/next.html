@@ -1,12 +1,24 @@
 {% extends 'base.html' %}
 
 {% block body %}
-<table border="0">
-{% for (key, value) in address.items() %}
-    <tr>
-        <td>{{ key }}</td>
-        <td>{{ value }}</td>
-    </tr>
+{% for j in range(title|length) %}
+  <h2 style="text-align: center;">{{ title[j] }}</h2>
+
+  {% for i in range(politician[j]|length) %}
+    <table border="1" style="margin: 0 auto 30px auto;">
+      <thead>
+        <tr>
+          <th>{{ politician[j][i] }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for fact in facts[j][i] %}
+          <tr>
+            <td>{{ fact }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% endfor %}
 {% endfor %}
-</table>
 {% endblock %}
