@@ -1,10 +1,10 @@
 import os
 from sqlalchemy import create_engine, MetaData, Table, select
 from sqlalchemy.orm import Session
-from db_stuff.geocod import lookup_address
+from db_testing.geocod import lookup_address
 
 basedir = os.path.abspath(os.path.dirname(__file__))
-engine = create_engine("sqlite:///" + os.path.join(basedir, "politicians.db"))
+engine = create_engine("sqlite:///" + os.path.join(basedir, "politician.db"))
 
 metadata = MetaData()
 metadata.reflect(bind=engine)  # reads existing table structure from the db file
